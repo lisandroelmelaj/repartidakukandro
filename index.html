@@ -340,27 +340,17 @@
     <p>// calculá quién debe qué</p>
   </header>
 
-  <!-- Paso 1: configurar -->
-  <div class="card" id="setup-card">
-    <div class="card-title">01 — Configuración</div>
-    <div class="setup-row">
-      <div class="field">
-        <label>Número de personas</label>
-        <input type="number" id="n-people" min="2" max="50" value="3" />
-      </div>
-      <div class="field">
-        <label>Moneda (símbolo)</label>
-        <input type="text" id="currency" value="$" maxlength="4" style="width:80px" />
-      </div>
-      <button class="btn-primary" onclick="generatePeople()">Generar →</button>
-    </div>
-  </div>
-
-  <!-- Paso 2: cargar datos -->
-  <div class="card" id="data-card" style="display:none">
+  <!-- Paso 1 + 2 unificados -->
+  <div class="card" id="data-card">
     <div class="section-header">
-      <div class="card-title" style="margin:0">02 — Ingresá los datos</div>
-      <button class="reset-btn" onclick="resetAll()">↺ Reiniciar</button>
+      <div class="card-title" style="margin:0">01 — Ingresá los datos</div>
+      <div style="display:flex;align-items:center;gap:0.7rem">
+        <div style="display:flex;align-items:center;gap:0.4rem">
+          <label style="margin:0;white-space:nowrap">Moneda:</label>
+          <input type="text" id="currency" value="$" maxlength="4" style="width:52px;padding:0.4rem 0.5rem;font-size:0.85rem" />
+        </div>
+        <button class="reset-btn" onclick="resetAll()">↺ Reiniciar</button>
+      </div>
     </div>
 
     <div id="people-list"></div>
@@ -405,25 +395,24 @@
 let people = [];
 let currency = '$';
 
-function generatePeople() {
-  const n = parseInt(document.getElementById('n-people').value);
-  currency = document.getElementById('currency').value || '$';
-  if (isNaN(n) || n < 2) { alert('Ingresá al menos 2 personas.'); return; }
-
-  people = [];
-  for (let i = 0; i < n; i++) {
-    people.push({ name: `Persona ${i+1}`, paid: 0, share: 0 });
-  }
-
+// Inicializar con 2 personas vacías al cargar
+window.onload = function() {
+  people = [
+    { name: '', paid: 0, share: 0 },
+    { name: '', paid: 0, share: 0 }
+  ];
   renderPeople();
-  document.getElementById('data-card').style.display = 'block';
-  document.getElementById('results-section').style.display = 'none';
-  document.getElementById('data-card').scrollIntoView({ behavior: 'smooth' });
-}
+};
 
 function addPerson() {
-  people.push({ name: `Persona ${people.length + 1}`, paid: 0, share: 0 });
+  people.push({ name: '', paid: 0, share: 0 });
   renderPeople();
+  // Foco en el nuevo nombre
+  setTimeout(() => {
+    const rows = document.querySelectorAll('#people-list .person-row');
+    const last = rows[rows.length - 1];
+    if (last) last.querySelector('input[type="text"]').focus();
+  }, 50);
 }
 
 function removePerson(i) {
@@ -441,7 +430,7 @@ function renderPeople() {
     row.innerHTML = `
       <div class="person-index">
         <div class="idx">${i+1}</div>
-        <input type="text" value="${p.name}" placeholder="Nombre"
+        <input type="text" value="${p.name}" placeholder="Nombre de la persona"
           oninput="people[${i}].name = this.value" style="background:transparent;border:none;color:var(--text);font-family:'Syne',sans-serif;font-size:0.95rem;font-weight:600;outline:none;width:100%" />
       </div>
       <div>
@@ -468,7 +457,7 @@ function calcular() {
   inputs.forEach((row, i) => {
     const nameInput = row.querySelector('input[type="text"]');
     const paidInput = row.querySelector('input[type="number"]');
-    people[i].name = nameInput.value || `Persona ${i+1}`;
+    people[i].name = nameInput.value.trim() || `Persona ${i+1}`;
     people[i].paid = parseFloat(paidInput.value) || 0;
   });
 
@@ -553,7 +542,11 @@ function calcTransfers() {
 }
 
 function resetAll() {
-  document.getElementById('data-card').style.display = 'none';
+  people = [
+    { name: '', paid: 0, share: 0 },
+    { name: '', paid: 0, share: 0 }
+  ];
+  renderPeople();
   document.getElementById('results-section').style.display = 'none';
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
