@@ -1,0 +1,2 @@
+# repartidakukandro
+repartir gastos
